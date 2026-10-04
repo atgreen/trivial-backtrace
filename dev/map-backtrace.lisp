@@ -119,7 +119,22 @@
        
        stack)))
 
-#-(or ccl sbcl clasp)
+#+egcl
+(defun impl-map-backtrace (func)
+  ;; These are owned snapshots, safe to retain after the callback or call returns.
+  ;; EGCL reports original actual arguments when available, not lexical locals;
+  ;; positional labels do not pretend to be source parameter names. Native
+  ;; arguments and source locations remain absent when metadata is unavailable.
+  (dolist (frame (egcl-debug:list-backtrace :count most-positive-fixnum))
+    (funcall func
+             (make-frame :func (getf frame :function)
+                         :vars (when (getf frame :arguments-available-p)
+                                 (loop for value in (getf frame :arguments)
+                                       for index from 0
+                                       collect (make-var :name (format nil "Arg-~D" index)
+                                                         :value value)))))))
+
+#-(or ccl sbcl clasp egcl)
 (defun impl-map-backtrace (func)
   (declare (ignore func))
   (warn "unable to map backtrace for ~a" (lisp-implementation-type)))

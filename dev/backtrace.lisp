@@ -118,6 +118,10 @@ string. Otherwise, returns nil.
 (defun print-backtrace-to-stream (stream)
   (clasp-debug:print-backtrace :stream stream))
 
+#+egcl
+(defun print-backtrace-to-stream (stream)
+  (egcl-debug:print-backtrace :stream stream :count most-positive-fixnum))
+
 ;; must be after the defun above or the docstring may be wiped out
 (setf (documentation 'print-backtrace-to-stream 'function)
   "Send a backtrace of the current error to stream. 
